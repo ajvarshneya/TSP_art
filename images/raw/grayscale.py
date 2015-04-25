@@ -1,9 +1,12 @@
 from PIL import Image
 
 if __name__ == "__main__":
+	raw_path = input('Enter image path/name: ')
 	# Load / grayscale an image
-	img = Image.open('campbells.jpg')
+	img = Image.open(raw_path)
 	img_gray = Image.new('L', img.size) # 'L' or 'RGB'
+
+	print("Processing image...")
 
 	width, height = img.size
 	pixels = img_gray.load()
@@ -21,10 +24,10 @@ if __name__ == "__main__":
 			img_gray.putpixel((x,y), gray) # 'L' format
 			# img_gray.putpixel((x,y), (gray,gray,gray)) # 'RGB' format
 
-	img_gray.show()
-	img_gray.save('campbells_gray.jpg')
+	print("Complete!")
 
-	img_dots = Image.new('')
+	img_gray.save('gray.jpg')
+	print('Saved grayscaled %s as gray.jpg') % raw_path
 
 	# generate voronoi diagram
 
