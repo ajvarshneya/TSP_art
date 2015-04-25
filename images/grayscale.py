@@ -1,12 +1,8 @@
 from PIL import Image
 
-def generate_voronoi_diagram():
-
-
 if __name__ == "__main__":
-
 	# Load / grayscale an image
-	img = Image.open('koala.jpg')
+	img = Image.open('campbells.jpg')
 	img_gray = Image.new('L', img.size) # 'L' or 'RGB'
 
 	width, height = img.size
@@ -26,7 +22,7 @@ if __name__ == "__main__":
 			# img_gray.putpixel((x,y), (gray,gray,gray)) # 'RGB' format
 
 	img_gray.show()
-	img_gray.save('koala_gray.jpg')
+	img_gray.save('campbells_gray.jpg')
 
 	img_dots = Image.new('')
 
