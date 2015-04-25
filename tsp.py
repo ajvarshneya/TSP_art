@@ -1,10 +1,30 @@
 from tkinter import *
-from data_gen import get_point_list
 import random
+import re
+
+def acquire_points():
+    # filename i/o
+    filename = 'images/stippled/earth_5kstip.svg'
+    f = open(filename, 'r')
+
+    result = []
+
+    # get points from .svg
+    for line in f:
+        if line.startswith('<circle'):
+            # gets x and y coords as string
+            x_s = re.search('cx="(.*)" cy="', line).group(1)
+            y_s = re.search('cy="(.*)" r="', line).group(1)
+            # converts x and y coords to floats, then ints
+            point = (int(float(x_s)), int(float(y_s)))
+            # adds point to list
+            result.append(point)
+
+    return result
 
 def draw_content(c, width, height):
     r = 1
-    points = get_point_list()
+    points = acquire_points()
     #random.shuffle(points)
 
     edge_list = generate_edge_list(points)
@@ -49,6 +69,8 @@ def find_MST(edge_list, num_nodes):
             MST_edges.append(edge_list[i])
             visited[edge_list[i][1]] = True
             visited[edge_list[i][2]] = True
+        if len(MST_edges) == num_nodes:
+            break
 
     print(len(MST_edges))
 
@@ -74,7 +96,6 @@ def run_program():
 
     # Display the frame
     frame.mainloop()
-
 
 if __name__ == "__main__":
     run_program()
