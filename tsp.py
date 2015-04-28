@@ -1,10 +1,49 @@
 from tkinter import *
 import random
 import re
+import math
+
+class Graph:
+    def __init__(self):
+        self.graph = {}
+
+    def get_adj_list(self, node):
+        return self.graph.get(node, None)
+
+    def get_nodes(self):
+        return list(self.graph.keys())
+
+    def add_node(self, node):
+        if node in self.graph:
+            return False
+        else:
+            self.graph[node] = []
+            return True
+
+    def link_nodes(self, u, v):
+        if u not in self.graph or v not in self.graph or u == v:
+            return False
+        else:
+            # Link nodes both ways
+            self.graph[u].append(v)
+            self.graph[v].append(u)
+            return True
+
+    def unlink_nodes(self, u, v):
+        if u not in self.graph or v not in self.graph or u == v:
+            return False
+        else:
+            self.graph[u].remove(v)
+            self.graph[v].remove(u)
+            return True
+
+    def __str__(self):
+        return str(self.graph)
 
 def acquire_points():
     # filename i/o
-    filename = 'images/stippled/earth_5kstip.svg'
+    # filename = 'images/stippled/earth_5kstip.svg'
+    filename = 'images/stippled/test.svg'
     f = open(filename, 'r')
 
     result = []
@@ -22,13 +61,43 @@ def acquire_points():
 
     return result
 
+def traverse_tree(cur_node, graph, path, visited):
+    # Modified DFS traversal of the tree
+    visited.append(cur_node)
+
+    # Go through all edges
+    for node in graph.get_adj_list(cur_node):
+        if node not in visited:
+            traverse_tree(node, graph, path, visited)
+
+    # Add the current node (after processing all adj nodes)
+    path.append(cur_node)
+
+def make_graph_from_edges(mst_edges):
+    g = Graph()
+    for edge in mst_edges:
+        g.add_node(edge[1])
+        g.add_node(edge[2])
+        g.link_nodes(edge[1], edge[2])
+    return g
+
 def draw_content(c, width, height):
     points = acquire_points()
-    #random.shuffle(points)
+    # random.shuffle(points)
 
     edge_list = generate_edge_list(points)
 
     mst_edges = find_MST_edges(edge_list, len(points))
+
+    # Make a graph for the MST
+    graph = make_graph_from_edges(mst_edges)
+
+    # Traverse the tree to find an approximate path
+    path = []
+    start_node = graph.get_nodes()[0]
+    # Add the start_node since the DFS traversal will put it at the end
+    path.append(start_node)
+    traverse_tree(start_node, graph, path, [])
 
     r = 1
     # for i in range(len(points)-1):
@@ -36,8 +105,13 @@ def draw_content(c, width, height):
     #     y_c = points[i][1]
     #     c.create_oval(x_c-r, y_c-r, x_c+r, y_c+r, fill="#000000")
 
-    for i in range(len(mst_edges)):
-        c.create_line(mst_edges[i][1][0]-800, mst_edges[i][1][1], mst_edges[i][2][0]-800, mst_edges[i][2][1])
+    # for i in range(len(mst_edges)):
+    #     c.create_line(mst_edges[i][1][0]-800, mst_edges[i][1][1], mst_edges[i][2][0]-800, mst_edges[i][2][1])
+
+    print(path)
+    print(path[0][0])
+    for i in range(len(path)-1):
+        c.create_line(path[i][0]-800, path[i][1], path[i+1][0]-800, path[i+1][1])
 
 def generate_edge_list(point_list):
     edge_list = []
@@ -84,13 +158,16 @@ def calc_square_distance(p1, p2):
 
     return dx*dx + dy*dy
 
+def calc_distance(p1, p2):
+    return math.sqrt(calc_square_distance(p1, p2))
+
 def run_program():
     # Create the program frame
     frame = Tk()
 
     # Create the canvas
-    canvas_width = 1600
-    canvas_height = 800
+    canvas_width = 400
+    canvas_height = 400
     c = Canvas(frame, width=canvas_width, height=canvas_height)
     c.pack()
 
