@@ -2,6 +2,7 @@ from tkinter import *
 import random
 import re
 import math
+import sys
 
 class Graph:
     def __init__(self):
@@ -43,7 +44,7 @@ class Graph:
 def acquire_points():
     # filename i/o
     # filename = 'images/stippled/earth_5kstip.svg'
-    filename = 'images/stippled/test.svg'
+    filename = 'images/stippled/star_test.svg'
     f = open(filename, 'r')
 
     result = []
@@ -85,6 +86,13 @@ def draw_content(c, width, height):
     points = acquire_points()
     # random.shuffle(points)
 
+    path = get_nearest_neighbors_path(points)
+
+    num_path_points = len(path)
+    for i in range(len(path)):
+        c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
+
+    """
     edge_list = generate_edge_list(points)
 
     mst_edges = find_MST_edges(edge_list, len(points))
@@ -112,6 +120,7 @@ def draw_content(c, width, height):
     print(path[0][0])
     for i in range(len(path)-1):
         c.create_line(path[i][0]-800, path[i][1], path[i+1][0]-800, path[i+1][1])
+    """
 
 def generate_edge_list(point_list):
     edge_list = []
@@ -152,6 +161,28 @@ def find_MST_edges(edge_list, num_nodes):
 
     return mst_edges
 
+def get_nearest_neighbors_path(point_list):
+    path = []
+    cur_point = point_list[0]
+    path.append(cur_point)
+    # Loop until every point has been added to the path
+    while len(path) != len(point_list):
+        best_point = None
+        min_dist = sys.maxsize
+        for j in range(len(point_list)):
+            # Check if the node is unvisited and nearest neighbor
+            dist = calc_square_distance(cur_point, point_list[j])
+            if  dist < min_dist and point_list[j] not in path:
+                min_dist = dist
+                best_point = point_list[j]
+
+        # Add the new node to the path and repeat
+        path.append(best_point)
+        cur_point = best_point
+
+    path.append(cur_point)
+    return path
+
 def calc_square_distance(p1, p2):
     dx = p1[0]-p2[0]
     dy = p1[1]-p2[1]
@@ -166,8 +197,8 @@ def run_program():
     frame = Tk()
 
     # Create the canvas
-    canvas_width = 400
-    canvas_height = 400
+    canvas_width = 1400
+    canvas_height = 800
     c = Canvas(frame, width=canvas_width, height=canvas_height)
     c.pack()
 
