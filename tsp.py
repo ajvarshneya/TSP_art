@@ -1,5 +1,4 @@
 from tkinter import *
-import random
 import re
 import math
 import sys
@@ -195,8 +194,7 @@ def get_nearest_neighbors_path(point_list):
 
 def two_opt(path):
     num_path_points = len(path)
-    # for n in range(num_path_points):
-    for n in range(20):                     # Use a smaller value of n for testing optimizations
+    for n in range(50):
         for i in range(num_path_points):
             a1 = path[i]
             a2 = path[(i+1)%num_path_points]
@@ -204,23 +202,12 @@ def two_opt(path):
                 b1 = path[j]
                 b2 = path[(j+1)%num_path_points]
                 if calc_distance(a1, b1) + calc_distance(a2, b2) < calc_distance(a1, a2) + calc_distance(b1, b2):
-                    new_path = []
-                    # Copy beginning of path
-                    for idx in range(i+1):      # idx < i+1
-                        new_path.append(path[idx])
-
-                    # Reverse middle of path
-                    for t in range((j-i)):    # i+1 <= idx <= j
-                        idx = j-t
-                        new_path.append(path[idx])        # Append in reverse order
-
-                    # Copy end of path
-                    for idx in range(j+1, num_path_points):
-                        new_path.append(path[idx])
-
-                    # Set the current path to the new path
-                    # print("Swapping", i, j)
-                    path = new_path
+                    # Reverse the middle values to change the path
+                    mid_range = int((j-i)/2)
+                    for k in range(mid_range):
+                        temp = path[i+1+k]
+                        path[i+1+k] = path[j-k]
+                        path[j-k] = temp
     return path
 
 def calc_square_distance(p1, p2):
