@@ -2,7 +2,7 @@ from tkinter import *
 import re
 import math
 import sys
-import time
+from time import sleep
 
 class Graph:
     def __init__(self):
@@ -44,7 +44,6 @@ class Graph:
 def acquire_points():
     # filename i/o
     filename = 'images/stippled/che_5kstip.svg'
-    # filename = 'images/stippled/earth_1kstip.svg'
     f = open(filename, 'r')
 
     result = []
@@ -106,22 +105,22 @@ def draw_content(c, width, height):
     print("Finding path...")
     traverse_tree(start_node, graph, path, [])
 
-    print("Path found. Running 2-opt...")
-    start = time.time()
-    path = two_opt(path)
-    end = time.time()
-    print(end-start)
-
-    r = 1
-    # for i in range(len(points)-1):
-    #     x_c = points[i][0]-800
-    #     y_c = points[i][1]
-    #     c.create_oval(x_c-r, y_c-r, x_c+r, y_c+r, fill="#000000")
-
+    # Draw the initial lines
     num_path_points = len(path)
     for i in range(len(path)):
         c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
+    c.update()
 
+    print("Running 2-opt...")
+    path = two_opt(path, c)
+
+    print("Done.")
+
+    c.delete(ALL)
+    num_path_points = len(path)
+    for i in range(len(path)):
+        c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
+    c.update()
     # ==================================================
     #   Nearest Neighbors implementation
     # ==================================================
@@ -200,7 +199,7 @@ def get_nearest_neighbors_path(point_list):
     #path.append(cur_point)
     return path
 
-def two_opt(path):
+def two_opt(path, c):
     num_path_points = len(path)
     for n in range(50):
         for i in range(num_path_points):
@@ -216,6 +215,17 @@ def two_opt(path):
                         temp = path[i+1+k]
                         path[i+1+k] = path[j-k]
                         path[j-k] = temp
+
+                    c.create_line(a1[0]-800, a1[1], b1[0]-800, b1[1], fill="#33ccbb")
+                    c.create_line(a2[0]-800, a2[1], b2[0]-800, b2[1], fill="#33ccbb")
+                    c.update()
+
+        # Redraw the path
+        c.delete(ALL)
+        num_path_points = len(path)
+        for i in range(len(path)):
+            c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
+        c.update()
     return path
 
 def calc_square_distance(p1, p2):
@@ -237,7 +247,7 @@ def run_program():
     c = Canvas(frame, width=canvas_width, height=canvas_height)
     c.pack()
 
-    draw_content(c, canvas_width, canvas_height)
+    frame.after(0, draw_content(c, canvas_width, canvas_height))
 
     # Display the frame
     frame.mainloop()
