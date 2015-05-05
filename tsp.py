@@ -3,6 +3,7 @@ import random
 import re
 import math
 import sys
+import time
 
 class Graph:
     def __init__(self):
@@ -44,7 +45,7 @@ class Graph:
 def acquire_points():
     # filename i/o
     # filename = 'images/stippled/earth_5kstip.svg'
-    filename = 'images/stippled/star_test.svg'
+    filename = 'images/stippled/earth_1k_stip.svg'
     f = open(filename, 'r')
 
     result = []
@@ -83,11 +84,20 @@ def make_graph_from_edges(mst_edges):
     return g
 
 def draw_content(c, width, height):
+    print("Acquiring points...")
     points = acquire_points()
     # random.shuffle(points)
 
+    print("Points acquired. Finding NN path...")
     path = get_nearest_neighbors_path(points)
 
+    print("Path found. Running 2-opt...")
+    start = time.time()
+    path = two_opt(path)
+    end = time.time()
+    print(end-start)
+
+    print("Finished 2-opt.")
     num_path_points = len(path)
     for i in range(len(path)):
         c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
@@ -180,7 +190,37 @@ def get_nearest_neighbors_path(point_list):
         path.append(best_point)
         cur_point = best_point
 
-    path.append(cur_point)
+    #path.append(cur_point)
+    return path
+
+def two_opt(path):
+    num_path_points = len(path)
+    # for n in range(num_path_points):
+    for n in range(20):                     # Use a smaller value of n for testing optimizations
+        for i in range(num_path_points):
+            a1 = path[i]
+            a2 = path[(i+1)%num_path_points]
+            for j in range(i+1, num_path_points):
+                b1 = path[j]
+                b2 = path[(j+1)%num_path_points]
+                if calc_distance(a1, b1) + calc_distance(a2, b2) < calc_distance(a1, a2) + calc_distance(b1, b2):
+                    new_path = []
+                    # Copy beginning of path
+                    for idx in range(i+1):      # idx < i+1
+                        new_path.append(path[idx])
+
+                    # Reverse middle of path
+                    for t in range((j-i)):    # i+1 <= idx <= j
+                        idx = j-t
+                        new_path.append(path[idx])        # Append in reverse order
+
+                    # Copy end of path
+                    for idx in range(j+1, num_path_points):
+                        new_path.append(path[idx])
+
+                    # Set the current path to the new path
+                    # print("Swapping", i, j)
+                    path = new_path
     return path
 
 def calc_square_distance(p1, p2):
