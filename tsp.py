@@ -43,8 +43,8 @@ class Graph:
 
 def acquire_points():
     # filename i/o
-    # filename = 'images/stippled/earth_5kstip.svg'
-    filename = 'images/stippled/earth_1k_stip.svg'
+    filename = 'images/stippled/che_5kstip.svg'
+    # filename = 'images/stippled/earth_1kstip.svg'
     f = open(filename, 'r')
 
     result = []
@@ -85,10 +85,26 @@ def make_graph_from_edges(mst_edges):
 def draw_content(c, width, height):
     print("Acquiring points...")
     points = acquire_points()
-    # random.shuffle(points)
 
-    print("Points acquired. Finding NN path...")
-    path = get_nearest_neighbors_path(points)
+    # ==================================================
+    #   MST implementation
+    # ==================================================
+    print("Finding edges...")
+    edge_list = generate_edge_list(points)
+
+    print("Finding mst...")
+    mst_edges = find_MST_edges(edge_list, len(points))
+
+    # Make a graph for the MST
+    print("Generating graph...")
+    graph = make_graph_from_edges(mst_edges)
+    # Traverse the tree to find an approximate path
+    path = []
+    start_node = graph.get_nodes()[0]
+    # Add the start_node since the DFS traversal will put it at the end
+    # path.append(start_node)
+    print("Finding path...")
+    traverse_tree(start_node, graph, path, [])
 
     print("Path found. Running 2-opt...")
     start = time.time()
@@ -96,40 +112,32 @@ def draw_content(c, width, height):
     end = time.time()
     print(end-start)
 
-    print("Finished 2-opt.")
-    num_path_points = len(path)
-    for i in range(len(path)):
-        c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
-
-    """
-    edge_list = generate_edge_list(points)
-
-    mst_edges = find_MST_edges(edge_list, len(points))
-
-    # Make a graph for the MST
-    graph = make_graph_from_edges(mst_edges)
-
-    # Traverse the tree to find an approximate path
-    path = []
-    start_node = graph.get_nodes()[0]
-    # Add the start_node since the DFS traversal will put it at the end
-    path.append(start_node)
-    traverse_tree(start_node, graph, path, [])
-
     r = 1
     # for i in range(len(points)-1):
     #     x_c = points[i][0]-800
     #     y_c = points[i][1]
     #     c.create_oval(x_c-r, y_c-r, x_c+r, y_c+r, fill="#000000")
 
-    # for i in range(len(mst_edges)):
-    #     c.create_line(mst_edges[i][1][0]-800, mst_edges[i][1][1], mst_edges[i][2][0]-800, mst_edges[i][2][1])
+    num_path_points = len(path)
+    for i in range(len(path)):
+        c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
 
-    print(path)
-    print(path[0][0])
-    for i in range(len(path)-1):
-        c.create_line(path[i][0]-800, path[i][1], path[i+1][0]-800, path[i+1][1])
-    """
+    # ==================================================
+    #   Nearest Neighbors implementation
+    # ==================================================
+    # print("Points acquired. Finding NN path...")
+    # path = get_nearest_neighbors_path(points)
+    #
+    # print("Path found. Running 2-opt...")
+    # start = time.time()
+    # path = two_opt(path)
+    # end = time.time()
+    # print(end-start)
+    #
+    # print("Finished 2-opt.")
+    # num_path_points = len(path)
+    # for i in range(len(path)):
+    #     c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
 
 def generate_edge_list(point_list):
     edge_list = []
