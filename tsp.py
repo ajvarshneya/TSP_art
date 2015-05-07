@@ -70,7 +70,7 @@ def acquire_points():
 
 def calc_distance(p1, p2):
     """
-    Reutrn the distance between p1 and p2
+    Return the distance between p1 and p2
     """
     return math.sqrt(calc_square_distance(p1, p2))
 
