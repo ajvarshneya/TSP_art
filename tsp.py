@@ -2,7 +2,6 @@ from tkinter import *
 import re
 import math
 import sys
-from time import sleep
 
 class Graph:
     def __init__(self):
@@ -43,7 +42,13 @@ class Graph:
 
 def acquire_points():
     # filename i/o
-    filename = 'images/stippled/che_5kstip.svg'
+    # check for filename in args, or get it as input
+    filename = None
+    for arg in sys.argv:
+        if arg.endswith('.svg'):
+            filename = arg
+    if filename == None:
+        filename = input("Please enter the filename: ")
     f = open(filename, 'r')
 
     result = []
@@ -106,10 +111,11 @@ def draw_content(c, width, height):
     traverse_tree(start_node, graph, path, [])
 
     # Draw the initial lines
-    num_path_points = len(path)
-    for i in range(len(path)):
-        c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
-    c.update()
+    if '-d' in sys.argv:
+        num_path_points = len(path)
+        for i in range(len(path)):
+            c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
+        c.update()
 
     print("Running 2-opt...")
     path = two_opt(path, c)
@@ -200,8 +206,15 @@ def get_nearest_neighbors_path(point_list):
     return path
 
 def two_opt(path, c):
+    draw_flag = '-d' in sys.argv
+
+    color = "#33ccbb"
+    for arg in sys.argv:
+        if arg.startswith('#') and len(arg) == 7:
+            color = arg
+
     num_path_points = len(path)
-    for n in range(50):
+    for n in range(20):
         for i in range(num_path_points):
             a1 = path[i]
             a2 = path[(i+1)%num_path_points]
@@ -216,16 +229,18 @@ def two_opt(path, c):
                         path[i+1+k] = path[j-k]
                         path[j-k] = temp
 
-                    c.create_line(a1[0]-800, a1[1], b1[0]-800, b1[1], fill="#33ccbb")
-                    c.create_line(a2[0]-800, a2[1], b2[0]-800, b2[1], fill="#33ccbb")
-                    c.update()
+                    if draw_flag:
+                        c.create_line(a1[0]-800, a1[1], b1[0]-800, b1[1], fill=color)
+                        c.create_line(a2[0]-800, a2[1], b2[0]-800, b2[1], fill=color)
+                        c.update()
 
         # Redraw the path
-        c.delete(ALL)
-        num_path_points = len(path)
-        for i in range(len(path)):
-            c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
-        c.update()
+        if draw_flag:
+            c.delete(ALL)
+            num_path_points = len(path)
+            for i in range(len(path)):
+                c.create_line(path[i][0]-800, path[i][1], path[(i+1)%num_path_points][0]-800, path[(i+1)%num_path_points][1])
+            c.update()
     return path
 
 def calc_square_distance(p1, p2):
