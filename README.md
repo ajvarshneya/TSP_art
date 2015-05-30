@@ -1,6 +1,6 @@
 # TSP_art
 
-Strategy:
+Strategy
 1. Generate images:
 	- Convert images to grayscale images
 	- Use [StippleGen](https://github.com/evil-mad/stipplegen/releases/tag/v2.31) to create SVG of stippled grayscale images
